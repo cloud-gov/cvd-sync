@@ -1,0 +1,87 @@
+---
+
+jobs:
+- name: update-cvdupdate-image
+  plan:
+  - get: src
+    trigger: true
+  - put: cvdupdate-image
+    params:
+      build: src/docker
+
+- name: update-cvd
+  plan:
+  - get: cvd-database-s3
+  - get: cvd-meta-s3
+  - get: hourly
+    trigger: true
+  - get: src
+  - task: update-definitions
+    image: cvdupdate-image
+    config:
+      platform: linux
+      params:
+        STATE_FILE: cvd-meta-s3/state.json
+        DATABASE_DIR: cvd-database-s3
+      inputs:
+      - name: cvd-database-s3
+      - name: cvd-meta-s3
+      - name: src
+  - put: cvd-database-s3
+  - put: cvd-meta-s3
+
+
+############################
+#  RESOURCES
+
+resources:
+
+# the meta bucket stores logs, config, and state files
+# the state file is _probably_ all we need to track
+# this is private data
+- name: cvd-meta-s3
+  type: s3-iam
+  source:
+    region_name: ((cvd-meta-bucket-region))
+    bucket: ((cvd-meta-bucket-name))
+
+# the database bucket stores the virus definition database files
+# these are served publicly
+- name: cvd-database-s3
+  type: s3-iam
+  source:
+    region_name: ((cvd-database-bucket-region))
+    bucket: ((cvd-database-bucket-name))
+
+- name: src
+  type: git
+  icon: github-circle
+  check_every: 10s
+  source:
+    uri: https://github.com/cloud-gov/((name))
+    branch: ((git-branch))
+
+- name: hourly
+  type: time
+  source:
+    interval: 1h
+
+- name: cvdupdate-image
+  type: docker-image
+  icon: docker
+  source:
+    email: ((docker-email))
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: ((docker-image))
+
+
+############################
+#  RESOURCE TYPES
+
+resource_types:
+
+- name: s3-iam
+  type: docker-image
+  source:
+    repository: 18fgsa/s3-resource
