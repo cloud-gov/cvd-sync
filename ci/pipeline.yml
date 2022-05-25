@@ -27,6 +27,8 @@ jobs:
       - name: cvd-database-s3
       - name: cvd-meta-s3
       - name: src
+      run: 
+        path: src/update-definitions.sh
   - put: cvd-database-s3
   - put: cvd-meta-s3
 
