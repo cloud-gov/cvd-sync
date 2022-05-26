@@ -13,4 +13,6 @@ echo '{
     "# cdiffs to keep": 30,
     "state file": "'"${STATE_FILE:=/home/cvdupdate/.cvdupdate/state.json}"'"
 }' > ~/.cvdupdate/config.json
-~/.local/bin/cvd update
+#~/.local/bin/cvd update
+touch cvd-meta-s3/semaphore.txt
+touch cvd-database-s3/other-semaphore.txt
