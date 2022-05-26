@@ -16,6 +16,7 @@ jobs:
   - get: hourly
     trigger: true
   - get: src
+  - get: cvdupdate-image
   - task: update-definitions
     image: cvdupdate-image
     config:
@@ -28,7 +29,7 @@ jobs:
       - name: cvd-meta-s3
       - name: src
       run: 
-        path: src/update-definitions.sh
+        path: src/ci/update-definitions.sh
   - put: cvd-database-s3
   - put: cvd-meta-s3
 
@@ -42,18 +43,22 @@ resources:
 # the state file is _probably_ all we need to track
 # this is private data
 - name: cvd-meta-s3
-  type: s3-iam
+  type: s3-simple
   source:
-    region_name: ((cvd-meta-bucket-region))
+    region: ((cvd-meta-bucket-region))
     bucket: ((cvd-meta-bucket-name))
+    access_key_id: ((cvd-access-key-id))
+    secret_access_key:  ((cvd-secret-access-key))
 
 # the database bucket stores the virus definition database files
 # these are served publicly
 - name: cvd-database-s3
-  type: s3-iam
+  type: s3-simple
   source:
-    region_name: ((cvd-database-bucket-region))
+    region: ((cvd-database-bucket-region))
     bucket: ((cvd-database-bucket-name))
+    access_key_id: ((cvd-access-key-id))
+    secret_access_key:  ((cvd-secret-access-key))
 
 - name: src
   type: git
@@ -83,7 +88,7 @@ resources:
 
 resource_types:
 
-- name: s3-iam
+- name: s3-simple
   type: docker-image
   source:
-    repository: 18fgsa/s3-resource
+    repository: 18fgsa/s3-resource-simple
