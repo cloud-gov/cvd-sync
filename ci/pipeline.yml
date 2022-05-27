@@ -28,10 +28,18 @@ jobs:
       - name: cvd-database-s3
       - name: cvd-meta-s3
       - name: src
+      outputs:
+      - name: cvd-database-s3
+      - name: cvd-meta-s3
+      - name: src
       run: 
         path: src/ci/update-definitions.sh
   - put: cvd-database-s3
+    inputs:
+    - cvd-database-s3
   - put: cvd-meta-s3
+    inputs:
+    - cvd-meta-s3
 
 
 ############################
@@ -49,6 +57,8 @@ resources:
     bucket: ((cvd-meta-bucket-name))
     access_key_id: ((cvd-access-key-id))
     secret_access_key:  ((cvd-secret-access-key))
+    options:
+    - "--sse AES256"
 
 # the database bucket stores the virus definition database files
 # these are served publicly
@@ -59,6 +69,8 @@ resources:
     bucket: ((cvd-database-bucket-name))
     access_key_id: ((cvd-access-key-id))
     secret_access_key:  ((cvd-secret-access-key))
+    options:
+    - "--sse AES256"
 
 - name: src
   type: git
@@ -71,7 +83,7 @@ resources:
 - name: hourly
   type: time
   source:
-    interval: 1h
+    interval: 12h
 
 - name: cvdupdate-image
   type: docker-image
