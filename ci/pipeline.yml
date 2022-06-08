@@ -29,7 +29,7 @@ jobs:
   plan:
   - get: cvd-database-s3
   - get: cvd-meta-s3
-  - get: hourly
+  - get: twice-daily
     trigger: true
   - get: src
   - get: cvdupdate-image
@@ -98,7 +98,7 @@ resources:
     uri: https://github.com/cloud-gov/((name))
     branch: ((git-branch))
 
-- name: hourly
+- name: twice-daily
   type: time
   source:
     interval: 12h
