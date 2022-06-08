@@ -1,6 +1,22 @@
 ---
 
 jobs:
+
+- name: reconfigure
+  serial: true
+  plan:
+  - get: src
+    params: {depth: 1}
+    trigger: true
+  - get: secrets
+    # Remember to manually trigger a new build if you upload a new version
+    # of the credentials file.
+    trigger: false
+  - set_pipeline: ((name))
+    file: src/ci/pipeline.yml
+    var_files:
+    - secrets/((name)).yml
+
 - name: update-cvdupdate-image
   plan:
   - get: src
@@ -96,6 +112,13 @@ resources:
     password: ((docker-password))
     repository: ((docker-image))
 
+- name: secrets
+  type: s3-iam
+  icon: cloud-lock
+  source:
+    region_name: ((concourse-varz-bucket-region))
+    bucket: ((concourse-varz-bucket))
+    versioned_file: ((name)).yml
 
 ############################
 #  RESOURCE TYPES
@@ -106,3 +129,8 @@ resource_types:
   type: docker-image
   source:
     repository: 18fgsa/s3-resource-simple
+
+- name: s3-iam
+  type: docker-image
+  source:
+    repository: 18fgsa/s3-resource
