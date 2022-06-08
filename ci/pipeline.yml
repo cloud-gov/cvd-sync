@@ -23,7 +23,7 @@ jobs:
       platform: linux
       params:
         STATE_FILE: cvd-meta-s3/state.json
-        DATABASE_DIR: cvd-database-s3
+        DATABASE_DIRECTORY: cvd-database-s3
       inputs:
       - name: cvd-database-s3
       - name: cvd-meta-s3
@@ -34,12 +34,12 @@ jobs:
       - name: src
       run: 
         path: src/ci/update-definitions.sh
-  - put: cvd-database-s3
-    inputs:
-    - cvd-database-s3
   - put: cvd-meta-s3
     inputs:
     - cvd-meta-s3
+  - put: cvd-database-s3
+    inputs:
+    - cvd-database-s3
 
 
 ############################
@@ -57,6 +57,7 @@ resources:
     bucket: ((cvd-meta-bucket-name))
     access_key_id: ((cvd-access-key-id))
     secret_access_key:  ((cvd-secret-access-key))
+    change_dir_to: cvd-meta-s3
     options:
     - "--sse AES256"
 
@@ -69,6 +70,7 @@ resources:
     bucket: ((cvd-database-bucket-name))
     access_key_id: ((cvd-access-key-id))
     secret_access_key:  ((cvd-secret-access-key))
+    change_dir_to: cvd-database-s3
     options:
     - "--sse AES256"
 
