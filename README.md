@@ -17,3 +17,12 @@ We run the `cvdupdate` tool in the container, tracking state in a private s3
 bucket, and keeping the virus database in a public website bucket, which then
 acts as a mirror. 
 
+## development
+
+### sharp edge - rate limiting
+
+Because the `cvdupdate` tool works differently from `freshclam` and is more 
+resource-intesive, clamav rate limits it much more aggressively. Like 5
+updates in an hour and you get locked out for 24 hours.
+If you're developing on parts _other_ than the `cvdupdate` step, it's best to 
+replace it with something like `touch` to fake updates.
