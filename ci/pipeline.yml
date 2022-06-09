@@ -1,6 +1,22 @@
 ---
 
 jobs:
+
+- name: reconfigure
+  serial: true
+  plan:
+  - get: src
+    params: {depth: 1}
+    trigger: true
+  - get: secrets
+    # Remember to manually trigger a new build if you upload a new version
+    # of the credentials file.
+    trigger: false
+  - set_pipeline: ((name))
+    file: src/ci/pipeline.yml
+    var_files:
+    - secrets/((name)).yml
+
 - name: update-cvdupdate-image
   plan:
   - get: src
@@ -13,7 +29,7 @@ jobs:
   plan:
   - get: cvd-database-s3
   - get: cvd-meta-s3
-  - get: hourly
+  - get: twice-daily
     trigger: true
   - get: src
   - get: cvdupdate-image
@@ -23,7 +39,7 @@ jobs:
       platform: linux
       params:
         STATE_FILE: cvd-meta-s3/state.json
-        DATABASE_DIR: cvd-database-s3
+        DATABASE_DIRECTORY: cvd-database-s3
       inputs:
       - name: cvd-database-s3
       - name: cvd-meta-s3
@@ -34,12 +50,12 @@ jobs:
       - name: src
       run: 
         path: src/ci/update-definitions.sh
-  - put: cvd-database-s3
-    inputs:
-    - cvd-database-s3
   - put: cvd-meta-s3
     inputs:
     - cvd-meta-s3
+  - put: cvd-database-s3
+    inputs:
+    - cvd-database-s3
 
 
 ############################
@@ -57,6 +73,7 @@ resources:
     bucket: ((cvd-meta-bucket-name))
     access_key_id: ((cvd-access-key-id))
     secret_access_key:  ((cvd-secret-access-key))
+    change_dir_to: cvd-meta-s3
     options:
     - "--sse AES256"
 
@@ -69,6 +86,7 @@ resources:
     bucket: ((cvd-database-bucket-name))
     access_key_id: ((cvd-access-key-id))
     secret_access_key:  ((cvd-secret-access-key))
+    change_dir_to: cvd-database-s3
     options:
     - "--sse AES256"
 
@@ -80,7 +98,7 @@ resources:
     uri: https://github.com/cloud-gov/((name))
     branch: ((git-branch))
 
-- name: hourly
+- name: twice-daily
   type: time
   source:
     interval: 12h
@@ -94,6 +112,13 @@ resources:
     password: ((docker-password))
     repository: ((docker-image))
 
+- name: secrets
+  type: s3-iam
+  icon: cloud-lock
+  source:
+    region_name: ((concourse-varz-bucket-region))
+    bucket: ((concourse-varz-bucket))
+    versioned_file: ((name)).yml
 
 ############################
 #  RESOURCE TYPES
@@ -104,3 +129,8 @@ resource_types:
   type: docker-image
   source:
     repository: 18fgsa/s3-resource-simple
+
+- name: s3-iam
+  type: docker-image
+  source:
+    repository: 18fgsa/s3-resource
