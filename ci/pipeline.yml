@@ -13,12 +13,13 @@ jobs:
       # Remember to manually trigger a new build if you upload a new version
       # of the credentials file.
       trigger: false
-    - get: terraform-yaml
+    - get: tooling-terraform-state-yaml
+      resource: tooling-terraform-state-yaml
   - set_pipeline: ((name))
     file: src/ci/pipeline.yml
     var_files:
     - secrets/((name)).yml
-    - terraform-yaml/state.yml
+    - tooling-terraform-state-yaml/state.yml
 
 - name: update-cvdupdate-image
   plan:
@@ -124,7 +125,7 @@ resources:
     bucket: ((concourse-varz-bucket))
     versioned_file: ((name)).yml
 
-- name: terraform-yaml
+- name: tooling-terraform-state-yaml
   type: s3-iam
   source:
     bucket: ((tf-state-bucket))
