@@ -12,10 +12,12 @@ jobs:
     # Remember to manually trigger a new build if you upload a new version
     # of the credentials file.
     trigger: false
+  - get: tooling-terraform-state-yaml
   - set_pipeline: ((name))
     file: src/ci/pipeline.yml
     var_files:
     - secrets/((name)).yml
+    - terraform-yaml/state.yml
 
 - name: update-cvdupdate-image
   plan:
@@ -71,8 +73,8 @@ resources:
   source:
     region: ((cvd-meta-bucket-region))
     bucket: ((cvd-meta-bucket-name))
-    access_key_id: ((cvd-access-key-id))
-    secret_access_key:  ((cvd-secret-access-key))
+    access_key_id: ((terraform_outputs.cvd_sync_access_key_id_curr))
+    secret_access_key:  ((terraform_outputs.cvd_sync_secret_access_key_curr))
     change_dir_to: cvd-meta-s3
     options:
     - "--sse AES256"
@@ -84,8 +86,8 @@ resources:
   source:
     region: ((cvd-database-bucket-region))
     bucket: ((cvd-database-bucket-name))
-    access_key_id: ((cvd-access-key-id))
-    secret_access_key:  ((cvd-secret-access-key))
+    access_key_id: ((terraform_outputs.cvd_sync_access_key_id_curr))
+    secret_access_key:  ((terraform_outputs.cvd_sync_secret_access_key_curr))
     change_dir_to: cvd-database-s3
     options:
     - "--sse AES256"
@@ -135,3 +137,12 @@ resource_types:
   type: docker-image
   source:
     repository: 18fgsa/s3-resource
+
+- name: tooling-terraform-state-yaml
+  type: s3-iam
+  tags: [iaas]
+  source:
+    bucket: ((tf-state-bucket))
+    versioned_file: ((tf-state-file))
+    region_name: ((aws-region))
+
