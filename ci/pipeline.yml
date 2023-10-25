@@ -17,7 +17,7 @@ jobs:
     file: src/ci/pipeline.yml
     var_files:
     - secrets/((name)).yml
-    - terraform-yaml/state.yml
+    - tooling-terraform-state-yaml/state.yml
 
 - name: update-cvdupdate-image
   plan:
