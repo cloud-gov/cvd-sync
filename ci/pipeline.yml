@@ -15,6 +15,7 @@ jobs:
       trigger: false
     - get: tooling-terraform-state-yaml
       resource: tooling-terraform-state-yaml
+      trigger: true
   - set_pipeline: ((name))
     file: src/ci/pipeline.yml
     var_files:
