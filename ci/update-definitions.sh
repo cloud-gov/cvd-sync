@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# setup cvdupdate
+mkdir -p ~root/.cvdupdate
+python -m pip install cvdupdate
+
 # kinda cheesy - cvdupdate doesn't support setting the state file from the command line
 # so we just write the whole config file ourselves.
 echo '{
@@ -13,4 +17,4 @@ echo '{
     "# cdiffs to keep": 30,
     "state file": "'"${STATE_FILE:=/home/cvdupdate/.cvdupdate/state.json}"'"
 }' > ~/.cvdupdate/config.json
-~/.local/bin/cvd update
+/usr/local/bin/cvd update

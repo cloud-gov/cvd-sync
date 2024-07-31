@@ -22,14 +22,6 @@ jobs:
     - secrets/((name)).yml
     - tooling-terraform-state-yaml/state.yml
 
-- name: update-cvdupdate-image
-  plan:
-  - get: src
-    trigger: true
-  - put: cvdupdate-image
-    params:
-      build: src/docker
-
 - name: update-cvd
   plan:
   - get: cvd-database-s3
@@ -37,9 +29,9 @@ jobs:
   - get: twice-daily
     trigger: true
   - get: src
-  - get: cvdupdate-image
+  - get: general-task
   - task: update-definitions
-    image: cvdupdate-image
+    image: general-task
     config:
       platform: linux
       params:
@@ -109,14 +101,14 @@ resources:
   source:
     interval: 12h
 
-- name: cvdupdate-image
-  type: docker-image
-  icon: docker
-  source:
-    email: ((docker-email))
-    username: ((docker-username))
-    password: ((docker-password))
-    repository: ((docker-image))
+ - name: general-task
+    type: registry-image
+    source:
+      aws_access_key_id: ((ecr_aws_key))
+      aws_secret_access_key: ((ecr_aws_secret))
+      repository: general-task
+      aws_region: us-gov-west-1
+      tag: latest
 
 - name: secrets
   type: s3-iam
