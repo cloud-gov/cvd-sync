@@ -26,7 +26,7 @@ jobs:
   plan:
   - get: cvd-database-s3
   - get: cvd-meta-s3
-  - get: twice-daily
+  - get: sync-timer
     trigger: true
   - get: src
   - get: general-task
@@ -96,10 +96,10 @@ resources:
     branch: ((git-branch))
     commit_verification_keys: ((cloud-gov-pgp-keys))
 
-- name: twice-daily
+- name: sync-timer
   type: time
   source:
-    interval: 12h
+    interval: 4h
 
 - name: general-task
   type: registry-image
