@@ -99,7 +99,7 @@ resources:
 - name: sync-timer
   type: time
   source:
-    interval: 4h
+    interval: 45m
 
 - name: general-task
   type: registry-image
